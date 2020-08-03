@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package checkout.api;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/emcfarlane/checkout/checkoutpb;checkoutpb";
+
+service Checkout {
+  // Authorize creates a new authorization.
+  rpc Authorize(AuthorizeRequest) returns (Authorization) {
+    option (google.api.http) = {
+      post : "/authorize"
+      body : "*"
+    };
+  }
+
+  // Captures funds for an authorization.
+  rpc Capture(CaptureRequest) returns (Authorization) {
+    option (google.api.http) = {
+      patch : "/capture"
+      body : "*"
+    };
+  }
+
+  // Refunds funds for an authorization.
+  rpc Refund(RefundRequest) returns (Authorization) {
+    option (google.api.http) = {
+      patch : "/refund"
+      body : "*"
+    };
+  }
+
+  // Voids an authorization.
+  rpc Void(VoidRequest) returns (Authorization) {
+    option (google.api.http) = {
+      post : "/void"
+      body : "*"
+    };
+  }
+}
+
+// AuthorizeRequest
+message AuthorizeRequest {
+  string pan = 1;       // Primary Account Number.
+  uint32 exp_month = 2; // Expiration month.
+  uint32 exp_year = 3;  // Expiration year.
+  string cvv = 4;       // Card Verification Value.
+  uint64 amount = 5;    // Total authorized amount in smallest currency unit.
+  string currency = 6;  // Currency of authorization.
+}
+
+// Authorization
+message Authorization {
+  string id = 1; // Authorization ID.
+  enum State {
+    UNKNOWN = 0;
+    OPEN = 1;
+    CAPTURE = 2;
+    REFUND = 3;
+    VOID = 4;
+  }
+  State state = 2;            // State of authorization.
+  uint64 amount = 3;          // Amount authorized.
+  uint64 amount_captured = 4; // Amount captured.
+  string currency = 5;        // Three letter ISO currency, in lower case.
+  google.protobuf.Timestamp create_time = 6; // Time authorization created.
+  google.protobuf.Timestamp update_time = 7; // Last time authorization updated.
+}
+
+message CaptureRequest {
+  string id = 1;     // Authorization ID.
+  uint64 amount = 2; // Capture amount.
+}
+
+message RefundRequest {
+  string id = 1;     // Authorization ID.
+  uint64 amount = 2; // Refund amount.
+}
+
+message VoidRequest {
+  string id = 1; // Authorization ID.
+}
