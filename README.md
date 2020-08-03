@@ -1,7 +1,10 @@
 Checkout
 ===
 
-Checkout implements an authorization flow.
+Checkout implements a simple authorization flow service.
+
+- gRPC service with HTTP bindings by [graphpb](https://github.com/emcfarlane/graphpb)
+- Postgres service with library from [go cloud cdk](https://github.com/google/go-cloud)
 
 Build
 ---

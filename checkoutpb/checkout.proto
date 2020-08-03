@@ -5,6 +5,11 @@ package checkout.api;
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
+// REST bindings are documented here:
+// https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
+//
+// Additional bindings are provided for an alternative RESTful API design.
+
 option go_package = "github.com/emcfarlane/checkout/checkoutpb;checkoutpb";
 
 service Checkout {
@@ -13,6 +18,7 @@ service Checkout {
     option (google.api.http) = {
       post : "/authorize"
       body : "*"
+      additional_bindings {post : "/v1/authorization" body : "*"}
     };
   }
 
@@ -21,6 +27,7 @@ service Checkout {
     option (google.api.http) = {
       patch : "/capture"
       body : "*"
+      additional_bindings {patch : "/v1/authorization/{id}/capture"}
     };
   }
 
@@ -29,6 +36,7 @@ service Checkout {
     option (google.api.http) = {
       patch : "/refund"
       body : "*"
+      additional_bindings {patch : "/v1/authorization/{id}/refund"}
     };
   }
 
@@ -37,6 +45,7 @@ service Checkout {
     option (google.api.http) = {
       post : "/void"
       body : "*"
+      additional_bindings {delete : "/v1/authorization/{id}"}
     };
   }
 }
