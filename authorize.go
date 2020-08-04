@@ -14,6 +14,8 @@ import (
 )
 
 func (s *Service) Authorize(ctx context.Context, req *pb.AuthorizeRequest) (*pb.Authorization, error) {
+	t := time.Now()
+
 	pan, err := parsePAN(req.Pan)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pan: %v", err.Error())
@@ -24,6 +26,9 @@ func (s *Service) Authorize(ctx context.Context, req *pb.AuthorizeRequest) (*pb.
 	expiry, err := parseExpiry(req.ExpYear, req.ExpMonth)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid expiry: %v", err)
+	}
+	if expiry.Before(t) {
+		return nil, status.Errorf(codes.InvalidArgument, "card expired %v/%v", expiry.Month(), expiry.Year())
 	}
 	cvv := req.Cvv
 	if ok := checkCVV(cvv); !ok {
@@ -39,7 +44,6 @@ func (s *Service) Authorize(ctx context.Context, req *pb.AuthorizeRequest) (*pb.
 	}
 
 	id := uuid.New()
-	t := time.Now()
 
 	// Authorize the payment with the Bank.
 	if err := s.bank.Authorize(id.String(), pan, cvv, expiry, amount, currency); err != nil {

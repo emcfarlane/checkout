@@ -23,14 +23,21 @@ func env(key, def string) string {
 
 func TestMain(m *testing.M) {
 	dbURL := env("POSTGRES", "postgres://edward:password@localhost/checkout")
+	ctx := context.Background()
 
 	var err error
-	db, err = postgres.Open(context.TODO(), dbURL)
+	db, err = postgres.Open(ctx, dbURL)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
 	defer db.Close()
+
+	// Initialise tables.
+	if err := createTables(db, ctx); err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 
 	os.Exit(m.Run())
 }

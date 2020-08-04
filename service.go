@@ -37,9 +37,8 @@ func NewService(logger *zap.Logger, db *sql.DB, bank Bank) (*Service, error) {
 	}, nil
 }
 
-// CreateTables initialises the postgres database.
-func (s *Service) CreateTables(ctx context.Context) error {
-	if _, err := s.db.ExecContext(ctx, `
+func createTables(db *sql.DB, ctx context.Context) error {
+	_, err := db.ExecContext(ctx, `
 CREATE TABLE IF NOT EXISTS authorizations (
 	id UUID PRIMARY KEY,
 	state INTEGER NOT NULL,
@@ -47,8 +46,13 @@ CREATE TABLE IF NOT EXISTS authorizations (
 	amount_captured INTEGER NOT NULL,
 	create_time TIMESTAMP NOT NULL,
 	update_time TIMESTAMP NOT NULL
-);`,
-	); err != nil {
+);`)
+	return err
+}
+
+// CreateTables initialises the postgres database.
+func (s *Service) CreateTables(ctx context.Context) error {
+	if err := createTables(s.db, ctx); err != nil {
 		s.log.Error("database init error", zap.Error(err))
 		return err
 	}
