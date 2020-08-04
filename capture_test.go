@@ -38,4 +38,14 @@ func TestCapture(t *testing.T) {
 	if rsp.AmountCaptured != rsp.Amount {
 		t.Fatalf("expected full amount: %d", rsp.AmountCaptured)
 	}
+
+	// Check mock bank fails with capture failure.
+	rsp, err = s.Authorize(ctx, testAuthReq("4000 0000 0000 0259"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.Capture(ctx, &pb.CaptureRequest{Id: rsp.Id, Amount: rsp.Amount - 1})
+	if err == nil {
+		t.Fatal("expected capture failure")
+	}
 }

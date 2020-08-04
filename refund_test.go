@@ -48,4 +48,18 @@ func TestRefund(t *testing.T) {
 	if rsp.AmountCaptured != 0 {
 		t.Fatalf("expected full request: %d", rsp.AmountCaptured)
 	}
+
+	// Check mock bank fails with refund failure.
+	rsp, err = s.Authorize(ctx, testAuthReq("4000 0000 0000 3238"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.Capture(ctx, &pb.CaptureRequest{Id: rsp.Id, Amount: rsp.Amount})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.Refund(ctx, &pb.RefundRequest{Id: rsp.Id, Amount: rsp.Amount})
+	if err == nil {
+		t.Fatal("expected refund failure")
+	}
 }

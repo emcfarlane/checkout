@@ -53,6 +53,12 @@ func (s *Service) Capture(ctx context.Context, req *pb.CaptureRequest) (*pb.Auth
 		tx.Rollback()
 		return nil, status.Errorf(codes.InvalidArgument, "capture amount %d greater than %d authorized", req.Amount, amount)
 	}
+
+	// Capture funds with the Bank.
+	if err := s.bank.Capture(id, req.Amount); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	amountCaptured += req.Amount
 
 	state = pb.Authorization_CAPTURE

@@ -53,6 +53,12 @@ func (s *Service) Refund(ctx context.Context, req *pb.RefundRequest) (*pb.Author
 		tx.Rollback()
 		return nil, status.Errorf(codes.InvalidArgument, "refund amount %d greater than captured %d", req.Amount, amountCaptured)
 	}
+
+	// Refund funds with the Bank.
+	if err := s.bank.Refund(id, req.Amount); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
 	amountCaptured -= req.Amount
 
 	state = pb.Authorization_REFUND
